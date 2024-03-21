@@ -2,9 +2,7 @@
 
 // import graphQL
 const graphql = require('graphql');
-
-// goddamn lodash
-const _ = require('lodash');
+const axios = require('axios');
 
 // destructuring madness:
 const {
@@ -15,11 +13,6 @@ const {
 	GraphQLSchema
 } = graphql;
 
-// hardcoded data:
-const users = [
-	{ id: '23', firstName: 'Bill', age: 20 },
-	{ id: '47', firstName: 'Arya', age: 3 },
-]
 // GraphQLObjectType is used to tell GraphQL about the 'idea of a User'
 const UserType = new GraphQLObjectType({
 	name: 'User',
@@ -40,15 +33,10 @@ const RootQuery = new GraphQLObjectType({
 			args: { id: { type: GraphQLString } },
 			// most important propery:
 			// also: parentValue is notorious for NEVER BEING USED, EVER
-
-			// stupid lodash
-			// resolve(parentValue, args) {
-			// 	return _.find(users, { id: args.id })
-			// }
-			
-			// no lodash beeeyatch!!!!!!!!
 			resolve(parentValue, args) {
-				return users.find(user => user.id === args.id)
+				return axios.get(`http://localhost:3000/users/${args.id}`)
+				// pairing down response obj to make axios work nicely
+					.then(resp => resp.data)
 			}
 		}
 	}
