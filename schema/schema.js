@@ -17,7 +17,7 @@ const {
 // IMPORTANT to define the companytype ABOVE usertype
 const CompanyType = new GraphQLObjectType({
 	name: 'Company',
-	// to fix circular reference with a CLOSURE: gets defined but doesn't get executed until entire file has been executed
+	// to fix circular reference with a CLOSURE: gets defined but doesn't get executed until entire file has been executed; wrapping fields object in an arrow function
 	fields: () => ({
 		id: { type: GraphQLString },
 		name: { type: GraphQLString },
@@ -39,7 +39,7 @@ const CompanyType = new GraphQLObjectType({
 const UserType = new GraphQLObjectType({
 	name: 'User',
 	// most important property
-	fields: {
+	fields: () => ({
 		id: { type: GraphQLString },
 		firstName: { type: GraphQLString },
 		age: { type: GraphQLInt },
@@ -51,7 +51,7 @@ const UserType = new GraphQLObjectType({
 					.then(res => res.data)
 			}
 		}
-	}
+	})
 });
 
 const RootQuery = new GraphQLObjectType({
