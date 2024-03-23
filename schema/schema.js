@@ -17,29 +17,29 @@ const {
 // IMPORTANT to define the companytype ABOVE usertype
 const CompanyType = new GraphQLObjectType({
 	name: 'Company',
-	// most important property
-	fields: {
+	// to fix circular reference with a CLOSURE: gets defined but doesn't get executed until entire file has been executed; wrapping fields object in an arrow function
+	fields: () => ({
 		id: { type: GraphQLString },
 		name: { type: GraphQLString },
 		description: { type: GraphQLString },
 		// company TO a list of users (all users that belong to that company)
-		// users: {
-		// 	// because it's an ARRAY (list in other langs) of users, mult users for one company
-		// 	type: new GraphQLList(UserType),
-		// 	//NOTE: parentValue is the CURRENT company we are working with
-		// 	resolve(parentValue, args) {
-		// 		return axios.get(`http://localhost:3000/companies/${parentValue.id}/users`)
-		// 			.then(res => res.data);
-		// 	}
-		// }
-	}
+		users: {
+			// because it's an ARRAY (list in other langs) of users, mult users for one company
+			type: new GraphQLList(UserType),
+			//NOTE: parentValue is the CURRENT company we are working with
+			resolve(parentValue, args) {
+				return axios.get(`http://localhost:3000/companies/${parentValue.id}/users`)
+					.then(res => res.data);
+			}
+		}
+	})
 });
 
 // GraphQLObjectType is used to tell GraphQL about the 'idea of a User'
 const UserType = new GraphQLObjectType({
 	name: 'User',
 	// most important property
-	fields: {
+	fields: () => ({
 		id: { type: GraphQLString },
 		firstName: { type: GraphQLString },
 		age: { type: GraphQLInt },
@@ -51,7 +51,7 @@ const UserType = new GraphQLObjectType({
 					.then(res => res.data)
 			}
 		}
-	}
+	})
 });
 
 const RootQuery = new GraphQLObjectType({
