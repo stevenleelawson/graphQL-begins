@@ -11,10 +11,10 @@ const {
 	GraphQLInt,
 	GraphQLList,
 	// takes in a RootQuery and returns a GraphQLSchema instance
-	GraphQLSchema
+	GraphQLSchema,
+	GraphQLNonNull
 } = graphql;
 
-// IMPORTANT to define the companytype ABOVE usertype
 const CompanyType = new GraphQLObjectType({
 	name: 'Company',
 	// to fix circular reference with a CLOSURE: gets defined but doesn't get executed until entire file has been executed; wrapping fields object in an arrow function
@@ -84,6 +84,52 @@ const RootQuery = new GraphQLObjectType({
 	},
 });
 
+// change data in some fashion ie POST PATCH DELETE
+const mutation = new GraphQLObjectType({
+	name: 'Mutation',
+	fields: {
+		addUser: {
+			// type of data that is RETURNED
+			type: UserType,
+			// the data passed in: name age co id
+			args: {
+				// GraphQLNonNull just a helper that means you must provide a value
+				firstName: { type: new GraphQLNonNull(GraphQLString) },
+				age: { type: new GraphQLNonNull(GraphQLInt) },
+				companyId: { type: GraphQLString },
+			},
+			// just destructuring args here, no big whoop
+			resolve(parentValue, { firstName, age }) {
+				return axios.post('http://localhost:3000/users', { firstName, age })
+					.then(res => res.data);
+			}
+		},
+		deleteUser: {
+			type: UserType,
+			args: { id: { type: new GraphQLNonNull(GraphQLString)} },
+			resolve(parentValue, { id }) {
+				return axios.delete(`http://localhost:3000/users/${id}`)
+					.then(res => res.data)
+			}
+		},
+		editUser: {
+			type: UserType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLString) },
+				firstName: { type: GraphQLString },
+				age: { type: GraphQLInt },
+				companyId: { type: GraphQLString },
+			},
+			resolve(parentValue, args) {
+				return axios.patch(`http://localhost:3000/users/${args.id}`, args)
+					.then(res => res.data);
+			}
+		}
+	}
+})
+
 module.exports = new GraphQLSchema({
-	query: RootQuery
+	query: RootQuery,
+	// NOTE: same as mutation: mutation
+	mutation
 })
